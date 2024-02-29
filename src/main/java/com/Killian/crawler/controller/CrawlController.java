@@ -1,10 +1,10 @@
 package com.Killian.crawler.controller;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -17,6 +17,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,15 +28,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 @Controller
 @RequestMapping("/api")
 public class CrawlController {
 
+    private byte[] writeWorkbookToByteArray(Workbook workbook) throws IOException {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        }
+    }
+
     @PostMapping("/getXls")
-    public void getXls(@RequestParam("name") String name, @RequestParam("order") int order,
-            @RequestParam("dataCnt") int dataCnt, @RequestBody String src, HttpServletResponse response) {
+    public ResponseEntity<byte[]> getXls(@RequestParam("name") String name, @RequestParam("order") int order,
+            @RequestParam("dataCnt") int dataCnt, @RequestBody String src) {
 
         String filePath = "src/main/resources/templates/clonepage.html";
 
@@ -44,40 +52,44 @@ public class CrawlController {
             String html = jsonNode.get("src").asText();
             try (FileWriter writer = new FileWriter(filePath)) {
                 writer.write(html);
-                System.out.println("Write successful.");
-
-                // workbook here
-                Workbook workbook = crawl("http://localhost:8080/clonepage", dataCnt);
+                System.out.println("Clone successful.");
 
                 try {
-                    int fileOrder = order;
-                    File myFile = new File(
-                            "C:/Users/Administrator/Desktop/New folder - Copy/file" + fileOrder + ".xls");
-                    FileOutputStream outputStream = new FileOutputStream(myFile.getAbsolutePath());
-                    workbook.write(outputStream);
-                    workbook.close();
-                    outputStream.close();
-                    System.out.println("File exported: " + fileOrder);
+                    // workbook here
+                    Workbook workbook = crawl("http://localhost:8080/clonepage", dataCnt);
+
+                    try {
+                        File myFile = new File("E:/projects/tendata-crawler/tmp/" + order + ".xls");
+                        FileOutputStream outputStream = new FileOutputStream(myFile.getAbsolutePath());
+                        workbook.write(outputStream);
+                        workbook.close();
+                        outputStream.close();
+                        System.out.println("File exported: " + order);
+                    } catch (Exception e) {
+                        System.out.println("Error exporting .xls");
+                    }
+
+                    byte[] excelBytes = writeWorkbookToByteArray(workbook);
+
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.add("Content-Disposition", "attachment; filename=exported_data.xlsx");
+
+                    return ResponseEntity
+                            .ok()
+                            .headers(headers)
+                            .body(excelBytes);
                 } catch (Exception e) {
-                    System.out.println("Error exporting .xls");
-                }
-
-                response.setContentType("application/vnd.ms-excel");
-                response.setHeader("Content-disposition", "attachment; filename=" + name + "_" + order + ".xls");
-
-                try (OutputStream outputStream = response.getOutputStream()) {
-                    workbook.write(outputStream);
-                    outputStream.flush();
-                    workbook.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    // Handle exceptions appropriately
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
                 }
 
             } catch (IOException e) {
-                System.err.println("Error writing to file: " + e.getMessage());
+                System.err.println("Error cloning to file: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

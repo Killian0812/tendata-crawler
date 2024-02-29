@@ -44,23 +44,31 @@
     </style>
 </head>
 
-<body>
-    <h1>Tendata Data Scraper</h1>
-    <h3>Made by Killian0812</h3>
+<body style="align-items: center; text-align: center;">
+    <div>
+        <h1>Tendata Data Scraper</h1>
+        <h3>Made by Killian0812</h3>
+    </div>
     <br>
+    <div style="text-align: left; margin-left: 25%">
+        <label>Instruction:</label>
+        <p>Step 1: Go to page that you want to crawl data.</p>
+        <p>Step 2: Hit F12 or (Ctrl + Shift + I) or (Right Click + Inspect) to view your webpage Elements.</p>
+        <p>Step 3: Right click on &lt;html&gt; element => Copy => Copy element. You can also copy &lt;table&gt;
+            element only.</p>
+        <p>Step 4: Paste what you've copied into input field below to clone the page. </p>
+        <p>Step 5: Give additional information then hit 'CRAWL'</p>
+
+        <p>You can view the cloned page at <a href="/clonepage" target="_blank" id="popup">HERE</a>. The view can be
+            crooked
+            but your
+            data remain same, so dont afraid to crawl it.</p>
+    </div>
     <form id="info">
         <div>
-            <label>Instruction:</label>
-            <p>Step 1: Go to page that you want to crawl data.</p>
-            <p>Step 2: Hit F12 or (Ctrl + Shift + I) or (Right Click + Inspect) to view your webpage Elements.</p>
-            <p>Step 3: Right click on &lt;html&gt; element => Copy => Copy element. You can also copy &lt;table&gt;
-                element only.</p>
-            <p>Step 4: Paste what you have copied into below input field. </p>
-            <p>Step 5: Give additional information then hit 'CRAWL'</p>
-
-            <div style="font-weight: bold;">HTML Element:</div>
+            <div style="font-weight: bold; text-align: left; margin-left: 25%">HTML Element:</div>
             <div>
-                <textarea type="text" id="clone" style="width: 50vh; height: 30vh;" required></textarea>
+                <textarea type="text" id="clone" style="width: 60vh; height: 30vh;" required></textarea>
                 <div style="vertical-align: top; display: inline-block;">
                     <div>
                         <button type="button" class="collapsible">View Example</button>
@@ -78,11 +86,11 @@
                     <div style="width: 100%; padding-left: 10px; padding-top: 20px;">
                         <label>Number of data you want to crawl:</label>
                         <input type='number' id="dataCnt" style="width: 5vh" value="20" required>
+                    </div>
+                    <div style="width: 100%; padding-left: 10px; padding-top: 20px;">
                         <button type="submit" style="vertical-align: top; font-size: 20px;">CRAWL</button>
                     </div>
-                    <div id="msg" style="width: 100%; padding-left: 10px; padding-top: 20px;">
-
-                    </div>
+                    <div id="msg" style="width: 100%; padding-left: 10px; padding-top: 20px;"></div>
                 </div>
             </div>
         </div><br><br>
@@ -95,6 +103,7 @@
         e.preventDefault();
         var filename = document.getElementById('filename').value;
         var order = document.getElementById('fileorder').value;
+        var fileExt = filename + '_' + order + '.xls';
         var dataCnt = document.getElementById('dataCnt').value;
         var htmlSrc = document.getElementById('clone').value;
         var msgDiv = document.getElementById('msg');
@@ -112,21 +121,25 @@
         fetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json' // Specify content type as JSON
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
         })
-            .then((res) => {
-                if (res.status == 200) {
-                    var msg = document.createElement("p");
-                    msg.innerHTML = "File exported: " + filename + '_' + order + '.xls';
-                    msgDiv.appendChild(msg);
-                    console.log("Request sent successfully");
-                } else {
-                    console.error("Request failed with status:", res.status);
-                }
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(new Blob([blob]));
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileExt;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
             })
-            .catch(err => console.log(err));
+            .then(() => {
+                var msg = document.createElement("p");
+                msg.innerHTML = "File exported: " + fileExt;
+                msgDiv.appendChild(msg);
+            });
     });
     var coll = document.getElementsByClassName("collapsible");
     var i;
