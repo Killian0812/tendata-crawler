@@ -5,64 +5,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tendata Data Scraper</title>
-    <style>
-        label {
-            font-weight: bold;
-        }
-
-        .collapsible {
-            background-color: #eee;
-            color: #444;
-            cursor: pointer;
-            padding: 8px;
-            width: 100%;
-            border: none;
-            text-align: left;
-            outline: none;
-            margin: 10px;
-        }
-
-        /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
-        .active,
-        .collapsible:hover {
-            background-color: #ccc;
-        }
-
-        /* Style the collapsible content. Note: hidden by default */
-        .content {
-            padding-top: 3px;
-            padding-bottom: 3px;
-            width: 100%;
-            border: none;
-            text-align: left;
-            outline: none;
-            margin: 10px;
-            display: none;
-            background-color: #f1f1f1;
-            overflow: hidden;
-        }
-    </style>
+    <link rel="stylesheet" href="/style.css">
 </head>
 
 <body style="align-items: center; text-align: center;">
-    <div>
+    <div class="intro">
         <h1>Tendata Data Scraper</h1>
         <h3>Made by Killian0812</h3>
     </div>
     <br>
-    <div style="text-align: left; margin-left: 25%">
-        <label>Instruction:</label>
-        <p>Step 1: Go to page that you want to crawl data.</p>
-        <p>Step 2: Hit F12 or (Ctrl + Shift + I) or (Right Click + Inspect) to view your webpage Elements.</p>
-        <p>Step 3: Right click on &lt;html&gt; element => Copy => Copy element. You can also copy &lt;table&gt;
-            element only.</p>
-        <p>Step 4: Paste what you've copied into input field below to clone the page. </p>
-        <p>Step 5: Give additional information then hit 'CRAWL'</p>
+    <div class="intruction">
+        <div style="text-align: left; margin-left: 25%">
+            <label>Instruction:</label>
+            <p>Step 1: Go to page that you want to crawl data.</p>
+            <p>Step 2: Hit F12 or (Ctrl + Shift + I) or (Right Click + Inspect) to view your webpage Elements.</p>
+            <p>Step 3: Right click on &lt;html&gt; element => Copy => Copy element. You can also copy &lt;table&gt;
+                element only.</p>
+            <p>Step 4: Paste what you've copied into input field below to clone the page. </p>
+            <p>Step 5: Give additional information then hit 'CRAWL'</p>
 
-        <p>You can view the cloned page at <a href="/clonepage" target="_blank" id="popup">HERE</a>. The view can be
-            crooked
-            but your
-            data remain same, so dont afraid to crawl it.</p>
+            <p>You can view the cloned page at <a href="/clonepage" target="_blank" id="popup">HERE</a>. The view can be
+                crooked
+                but your
+                data remain same, so dont afraid to crawl it.</p>
+        </div>
     </div>
     <form id="info">
         <div>
