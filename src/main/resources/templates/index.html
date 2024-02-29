@@ -76,7 +76,12 @@
                         <input type='number' id="fileorder" style="width: 5vh" placeholder="1" required>
                     </div>
                     <div style="width: 100%; padding-left: 10px; padding-top: 20px;">
+                        <label>Number of data you want to crawl:</label>
+                        <input type='number' id="dataCnt" style="width: 5vh" value="20" required>
                         <button type="submit" style="vertical-align: top; font-size: 20px;">CRAWL</button>
+                    </div>
+                    <div id="msg" style="width: 100%; padding-left: 10px; padding-top: 20px;">
+
                     </div>
                 </div>
             </div>
@@ -90,16 +95,19 @@
         e.preventDefault();
         var filename = document.getElementById('filename').value;
         var order = document.getElementById('fileorder').value;
+        var dataCnt = document.getElementById('dataCnt').value;
         var htmlSrc = document.getElementById('clone').value;
+        var msgDiv = document.getElementById('msg');
 
         var data = {
             name: filename,
             order: order,
+            dataCnt: dataCnt,
             src: htmlSrc
         };
 
         // Construct the URL with query parameters
-        var url = '/api/getXls?' + 'name=' + filename + '&order=' + order;
+        var url = '/api/getXls?' + 'name=' + filename + '&order=' + order + '&dataCnt=' + dataCnt;
 
         fetch(url, {
             method: 'POST',
@@ -110,6 +118,9 @@
         })
             .then((res) => {
                 if (res.status == 200) {
+                    var msg = document.createElement("p");
+                    msg.innerHTML = "File exported: " + filename + '_' + order + '.xls';
+                    msgDiv.appendChild(msg);
                     console.log("Request sent successfully");
                 } else {
                     console.error("Request failed with status:", res.status);

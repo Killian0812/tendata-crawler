@@ -16,7 +16,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CustomCrawler {
 
     public ArrayList<String> visitedUrl;
@@ -25,9 +27,7 @@ public class CustomCrawler {
         this.visitedUrl = new ArrayList<>();
     }
 
-    public void crawl(int level, String url) {
-        if (level > 5)
-            return;
+    public Workbook crawl(String url, int dataCnt) {
 
         Workbook workbook = new HSSFWorkbook();
         Sheet sheet = workbook.createSheet("Sheet");
@@ -54,8 +54,6 @@ public class CustomCrawler {
             // cell.setCellStyle(writeInBold);
             // }
 
-            int dataCnt = 15;
-
             Elements allRowElm = doc.select("tbody.ant-table-tbody tr");
 
             for (int i = 1; i <= dataCnt; i++) {
@@ -77,17 +75,19 @@ public class CustomCrawler {
 
         }
 
-        try {
-            int fileOrder = 26;
-            File myFile = new File("C:/Users/duong/Desktop/Cuong/2024/file" + fileOrder + ".xls");
-            FileOutputStream outputStream = new FileOutputStream(myFile.getAbsolutePath());
-            workbook.write(outputStream);
-            workbook.close();
-            outputStream.close();
-            System.out.println("File exported: " + fileOrder);
-        } catch (Exception e) {
-            System.out.println("Error exporting .xls");
-        }
+        // try {
+        //     int fileOrder = 1;
+        //     File myFile = new File("C:/Users/Administrator/Desktop/New folder - Copy/file" + fileOrder + ".xls");
+        //     FileOutputStream outputStream = new FileOutputStream(myFile.getAbsolutePath());
+        //     workbook.write(outputStream);
+        //     workbook.close();
+        //     outputStream.close();
+        //     System.out.println("File exported: " + fileOrder);
+        // } catch (Exception e) {
+        //     System.out.println("Error exporting .xls");
+        // }
+
+        return workbook;
     }
 
     public Document request(String url) {
