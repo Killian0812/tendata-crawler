@@ -1,10 +1,15 @@
 package com.Killian.crawler.controller;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -50,7 +55,8 @@ public class CrawlController {
         try {
             JsonNode jsonNode = objectMapper.readTree(src);
             String html = jsonNode.get("src").asText();
-            try (FileWriter writer = new FileWriter(filePath)) {
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(filePath), StandardCharsets.UTF_8))) {
                 writer.write(html);
                 System.out.println("Clone successful.");
 
