@@ -59,7 +59,7 @@ public class CrawlController {
                     Workbook workbook = crawl("http://localhost:8080/clonepage", dataCnt);
 
                     try {
-                        File myFile = new File("E:/projects/tendata-crawler/tmp/" + order + ".xls");
+                        File myFile = new File("./exported/" + name + '_' + order + ".xls");
                         FileOutputStream outputStream = new FileOutputStream(myFile.getAbsolutePath());
                         workbook.write(outputStream);
                         workbook.close();
