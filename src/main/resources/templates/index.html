@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tendata Data Scraper</title>
+    <style>
+        label {
+            font-weight: bold;
+        }
+
+        .collapsible {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 8px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            margin: 10px;
+        }
+
+        /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+        .active,
+        .collapsible:hover {
+            background-color: #ccc;
+        }
+
+        /* Style the collapsible content. Note: hidden by default */
+        .content {
+            padding-top: 3px;
+            padding-bottom: 3px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            margin: 10px;
+            display: none;
+            background-color: #f1f1f1;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Tendata Data Scraper</h1>
+    <h3>Made by Killian0812</h3>
+    <br>
+    <form id="info">
+        <div>
+            <label>Instruction:</label>
+            <p>Step 1: Go to page that you want to crawl data.</p>
+            <p>Step 2: Hit F12 or (Ctrl + Shift + I) or (Right Click + Inspect) to view your webpage Elements.</p>
+            <p>Step 3: Right click on &lt;html&gt; element => Copy => Copy element. You can also copy &lt;table&gt;
+                element only.</p>
+            <p>Step 4: Paste what you have copied into below input field. </p>
+            <p>Step 5: Give additional information then hit 'CRAWL'</p>
+
+            <div style="font-weight: bold;">HTML Element:</div>
+            <div>
+                <textarea type="text" id="clone" style="width: 50vh; height: 30vh;" required></textarea>
+                <div style="vertical-align: top; display: inline-block;">
+                    <div>
+                        <button type="button" class="collapsible">View Example</button>
+                        <div class="content">
+                            <p>File name = "Trade2024", File order = 1</p>
+                            <p>==> Exported file: Trade2024_1.xls</p>
+                        </div>
+                    </div>
+                    <div style="width: 100%; padding-left: 10px;">
+                        <label>File name:</label>
+                        <input type="text" id="filename" style="width: 15vh" placeholder="Trade2024" required>
+                        <label>File order:</label>
+                        <input type='number' id="fileorder" style="width: 5vh" placeholder="1" required>
+                    </div>
+                    <div style="width: 100%; padding-left: 10px; padding-top: 20px;">
+                        <button type="submit" style="vertical-align: top; font-size: 20px;">CRAWL</button>
+                    </div>
+                </div>
+            </div>
+        </div><br><br>
+    </form>
+
+</body>
+<script>
+    document.getElementById("info").addEventListener("submit", function (e) {
+
+        e.preventDefault();
+        var filename = document.getElementById('filename').value;
+        var order = document.getElementById('fileorder').value;
+        var htmlSrc = document.getElementById('clone').value;
+
+        var data = {
+            name: filename,
+            order: order,
+            src: htmlSrc
+        };
+
+        // Construct the URL with query parameters
+        var url = '/api/getXls?' + 'name=' + filename + '&order=' + order;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' // Specify content type as JSON
+            },
+            body: JSON.stringify(data)
+        })
+            .then((res) => {
+                if (res.status == 200) {
+                    console.log("Request sent successfully");
+                } else {
+                    console.error("Request failed with status:", res.status);
+                }
+            })
+            .catch(err => console.log(err));
+    });
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
+
+    for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function () {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+            } else {
+                content.style.display = "block";
+            }
+        });
+    }
+</script>
+
+</html>
