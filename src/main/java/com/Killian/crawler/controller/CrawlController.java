@@ -2,13 +2,9 @@ package com.Killian.crawler.controller;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -16,7 +12,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.jsoup.Connection;
+// import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -32,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @Controller
 @RequestMapping("/api")
 public class CrawlController {
@@ -45,60 +43,69 @@ public class CrawlController {
 
     @PostMapping("/getXls")
     public ResponseEntity<byte[]> getXls(@RequestParam("name") String name, @RequestParam("order") int order,
-            @RequestParam("dataCnt") int dataCnt, @RequestBody String src) {
+            @RequestParam("dataCnt") int dataCnt, @RequestBody String src, HttpServletRequest request) {
 
-        String filePath = "src/main/resources/templates/clonepage.html";
+        String requestUrl = request.getRequestURL().toString();
+        String baseUrl = requestUrl.substring(0, requestUrl.length() - 10);
+
+        String filePath = "./src/main/resources/templates/clonepage.html";
+        System.out.println(filePath);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
             JsonNode jsonNode = objectMapper.readTree(src);
             String html = jsonNode.get("src").asText();
-            try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(filePath), StandardCharsets.UTF_8))) {
+
+            // Create a temporary file
+            java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("clonepage", ".html");
+
+            // Write HTML content to the temporary file
+            try (BufferedWriter writer = new BufferedWriter(
+                    new FileWriter(tempFile.toFile(), StandardCharsets.UTF_8))) {
                 writer.write(html);
-                System.out.println("Clone successful.");
+            }
 
-                try {
-                    // workbook here
-                    Workbook workbook = crawl("http://localhost:8080/clonepage", dataCnt);
+            System.out.println("Clone successful");
 
-                    try {
-                        File myFile = new File("./exported/" + name + '_' + order + ".xls");
-                        FileOutputStream outputStream = new FileOutputStream(myFile.getAbsolutePath());
-                        workbook.write(outputStream);
-                        workbook.close();
-                        outputStream.close();
-                        System.out.println("File exported: " + order);
-                    } catch (Exception e) {
-                        System.out.println("Error exporting .xls");
-                    }
+            try {
+                // workbook here
+                Workbook workbook = crawl(baseUrl + "clonepage", dataCnt, html);
 
-                    byte[] excelBytes = writeWorkbookToByteArray(workbook);
+                // try {
+                // File myFile = new File("./exported/" + name + '_' + order + ".xls");
+                // FileOutputStream outputStream = new
+                // FileOutputStream(myFile.getAbsolutePath());
+                // workbook.write(outputStream);
+                // workbook.close();
+                // outputStream.close();
+                // System.out.println("File written to: " + "./exported/" + name + '_' + order +
+                // ".xls");
+                // } catch (Exception e) {
+                // System.out.println("Error written to file");
+                // }
 
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.add("Content-Disposition", "attachment; filename=exported_data.xlsx");
+                byte[] excelBytes = writeWorkbookToByteArray(workbook);
 
-                    return ResponseEntity
-                            .ok()
-                            .headers(headers)
-                            .body(excelBytes);
-                } catch (Exception e) {
-                    // Handle exceptions appropriately
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-                }
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Content-Disposition", "attachment; filename=exported_data.xls");
 
-            } catch (IOException e) {
-                System.err.println("Error cloning to file: " + e.getMessage());
+                return ResponseEntity
+                        .ok()
+                        .headers(headers)
+                        .body(excelBytes);
+            } catch (Exception e) {
+                System.out.println("Error creating xls workbook: " + e.getMessage());
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        } catch (IOException e) {
+            System.err.println("Error cloning to file: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    public Workbook crawl(String url, int dataCnt) {
+    public Workbook crawl(String url, int dataCnt, String html) {
 
         Workbook workbook = new HSSFWorkbook();
         Sheet sheet = workbook.createSheet("Sheet");
@@ -107,7 +114,7 @@ public class CrawlController {
         CellStyle writeInBold = workbook.createCellStyle();
         writeInBold.setFont(boldFont);
 
-        Document doc = request(url);
+        Document doc = request(url, html);
 
         if (doc != null) {
 
@@ -149,10 +156,12 @@ public class CrawlController {
         return workbook;
     }
 
-    public Document request(String url) {
+    public Document request(String url, String html) {
         try {
-            Connection con = Jsoup.connect(url);
-            Document doc = con.get();
+            // Connection con = Jsoup.connect(url);
+            // Document doc = con.get();
+            Document doc = Jsoup.parse(html);
+            
             System.out.println("Visiting: " + url + " | Page title: " + doc.title());
             return doc;
         } catch (Exception e) {
