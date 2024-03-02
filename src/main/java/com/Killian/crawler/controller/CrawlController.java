@@ -1,10 +1,7 @@
 package com.Killian.crawler.controller;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -34,6 +31,16 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api")
 public class CrawlController {
 
+    private String cloneSrc;
+
+    public String getCloneSrc() {
+        return this.cloneSrc;
+    }
+
+    public void setCloneSrc(String cloneSrc) {
+        this.cloneSrc = cloneSrc;
+    }
+
     private byte[] writeWorkbookToByteArray(Workbook workbook) throws IOException {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             workbook.write(outputStream);
@@ -57,15 +64,17 @@ public class CrawlController {
             JsonNode jsonNode = objectMapper.readTree(src);
             String html = jsonNode.get("src").asText();
 
-            // Create a temporary file
-            java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("clonepage", ".html");
+            // // Create a temporary file
+            // java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("clonepage",
+            // ".html");
 
-            // Write HTML content to the temporary file
-            try (BufferedWriter writer = new BufferedWriter(
-                    new FileWriter(tempFile.toFile(), StandardCharsets.UTF_8))) {
-                writer.write(html);
-            }
+            // // Write HTML content to the temporary file
+            // try (BufferedWriter writer = new BufferedWriter(
+            // new FileWriter(tempFile.toFile(), StandardCharsets.UTF_8))) {
+            // writer.write(html);
+            // }
 
+            setCloneSrc(html);
             System.out.println("Clone successful");
 
             try {
@@ -161,7 +170,7 @@ public class CrawlController {
             // Connection con = Jsoup.connect(url);
             // Document doc = con.get();
             Document doc = Jsoup.parse(html);
-            
+
             System.out.println("Visiting: " + url + " | Page title: " + doc.title());
             return doc;
         } catch (Exception e) {
